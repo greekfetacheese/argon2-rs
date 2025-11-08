@@ -1,0 +1,23 @@
+[package]
+name = "argon2-rs"
+authors = ["Michalis Molfetas"]
+description = "Argon2 password hashing library for Rust"
+version = "0.1.0"
+edition = "2024"
+readme = "readme.md"
+keywords = ["crypto", "hashing"]
+categories = ["cryptography"]
+license = "MIT OR Apache-2.0"
+
+[dependencies.argon2-sys]
+version = "0.1.0"
+
+[dependencies.thiserror]
+version = "2.0.17"
+
+[dependencies.zeroize]
+version = "1.8.2"
+optional = true
+
+[features]
+zeroize = ["dep:zeroize"]
