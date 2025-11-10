@@ -82,24 +82,6 @@ pub enum Argon2Error {
     Unknown(i32),
 }
 
-#[derive(ThisError, Debug)]
-pub enum CredentialsError {
-    #[error("Username is empty")]
-    UsernameEmpty,
-
-    #[error("Password is empty")]
-    PasswordEmpty,
-
-    #[error("Confirm password is empty")]
-    ConfirmPasswordEmpty,
-
-    #[error("Passwords do not match")]
-    PasswordsDoNotMatch,
-
-    #[error("{0}")]
-    Custom(String),
-}
-
 pub(crate) fn map_argon2_error(code: i32) -> Argon2Error {
     match code {
         -1 => Argon2Error::OutputPtrNull,

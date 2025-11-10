@@ -63,13 +63,38 @@ pub enum Version {
 /// - `version` - The version of the algorithm to use
 ///
 /// By default it will use the `Argon2id` with a `64 byte` hash length (maximum).
-/// 
-/// It is not recomended to change them, the default values are fine for most use cases.
+///
+/// It is not recomended to change these specific values, they are fine for most use cases.
 ///
 /// Generally speaking you don't want to mess with the `t_cost` and `p_cost` parameters a lot.
-/// For max security the `p_cost` should be set to `1` and the `t_cost` could be anything between `8` and `30`.
-/// That also depends on the `m_cost` which is the most important parameter.
-/// The higher the `m_cost` the more secure the hash is but the time it takes to compute it increases linearly.
+///
+/// ## About the `m_cost`, `t_cost` and `p_cost` parameters
+///
+/// ### `m_cost`
+///
+/// You should mostly adjust the `m_cost` if you really want to increase the security of the hash since this is
+/// the major bottleneck for GPUs and ASICs.
+///
+/// Anything from `1024_000` and beyond is considered very secure, if you are paranoid you should increase it
+/// to the max physical RAM of the machine this hash will be computed on.
+///
+/// ### `t_cost`
+/// For most use cases a good value is between `8` and `30`.
+///
+/// Increasing the `t_cost` will increase the time it takes to compute the hash linearly.
+///
+/// For example if the hash takes 10 seconds to compute with `t_cost` set to `8` and you increase it to `16` it will take roughly twice the time.
+///
+/// ### `p_cost`
+/// 
+/// For max security the `p_cost` should be set to `1`.
+///
+/// Increasing the `p_cost` will decrease the time it takes to compute the hash linearly.
+///
+/// For example if the hash takes 10 seconds to compute with `p_cost` set to `1` and you increase it to `2` it will take roughly half the time.
+///
+/// Keep in mind increasing the `p_cost` beyond the machine's physical cores will not increase the speed of the hash computation
+/// but in case of a brute-force attack the attacker will be able to use more cores to compute the hash and thus giving him leverage.
 ///
 /// ## Presets
 ///
