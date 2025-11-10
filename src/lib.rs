@@ -9,6 +9,7 @@ use zeroize::Zeroize;
 pub const RECOMMENDED_HASH_LENGTH: u64 = 64;
 
 /// Argon2 primitive type: variants of the algorithm.
+#[cfg_attr(feature = "bincode", derive(bincode::Encode, bincode::Decode))]
 #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Default, Ord)]
 pub enum Algorithm {
     /// Optimizes against GPU cracking attacks but vulnerable to side-channels.
@@ -36,6 +37,7 @@ pub enum Algorithm {
 }
 
 /// Version of the algorithm.
+#[cfg_attr(feature = "bincode", derive(bincode::Encode, bincode::Decode))]
 #[derive(Copy, Clone, Debug, Default, Eq, PartialEq, PartialOrd, Ord)]
 #[repr(u32)]
 pub enum Version {
@@ -105,6 +107,7 @@ pub enum Version {
 /// - `Argon2::balanced()`
 /// - `Argon2::slow()`
 /// - `Argon2::very_slow()`
+#[cfg_attr(feature = "bincode", derive(bincode::Encode, bincode::Decode))]
 #[derive(Default, Clone, Debug)]
 pub struct Argon2 {
     pub m_cost: u32,

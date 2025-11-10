@@ -19,5 +19,10 @@ version = "2.0.17"
 version = "1.8.2"
 optional = true
 
+[dependencies.bincode]
+version = "2.0.1"
+optional = true
+
 [features]
 zeroize = ["dep:zeroize"]
+bincode = ["dep:bincode"]
