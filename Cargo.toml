@@ -5,6 +5,7 @@ description = "Argon2 password hashing library for Rust"
 version = "0.1.11"
 edition = "2024"
 readme = "readme.md"
+repository = "https://github.com/greekfetacheese/argon2-rs"
 keywords = ["crypto", "hashing"]
 categories = ["cryptography"]
 license = "MIT OR Apache-2.0"
