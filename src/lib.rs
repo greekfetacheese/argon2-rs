@@ -9,8 +9,8 @@ use zeroize::Zeroize;
 pub const RECOMMENDED_HASH_LENGTH: u64 = 64;
 
 /// Argon2 primitive type: variants of the algorithm.
-#[cfg_attr(feature = "bincode", derive(bincode::Encode, bincode::Decode))]
 #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Default, Ord)]
+#[repr(u32)]
 pub enum Algorithm {
     /// Optimizes against GPU cracking attacks but vulnerable to side-channels.
     ///
@@ -37,7 +37,6 @@ pub enum Algorithm {
 }
 
 /// Version of the algorithm.
-#[cfg_attr(feature = "bincode", derive(bincode::Encode, bincode::Decode))]
 #[derive(Copy, Clone, Debug, Default, Eq, PartialEq, PartialOrd, Ord)]
 #[repr(u32)]
 pub enum Version {
@@ -88,7 +87,7 @@ pub enum Version {
 /// For example if the hash takes 10 seconds to compute with `t_cost` set to `8` and you increase it to `16` it will take roughly twice the time.
 ///
 /// ### `p_cost`
-/// 
+///
 /// For max security the `p_cost` should be set to `1`.
 ///
 /// Increasing the `p_cost` will decrease the time it takes to compute the hash linearly.
@@ -107,8 +106,7 @@ pub enum Version {
 /// - `Argon2::balanced()`
 /// - `Argon2::slow()`
 /// - `Argon2::very_slow()`
-#[cfg_attr(feature = "bincode", derive(bincode::Encode, bincode::Decode))]
-#[derive(Default, Clone, Debug)]
+#[derive(Default, Clone, Debug, PartialEq, Eq)]
 pub struct Argon2 {
     pub m_cost: u32,
     pub t_cost: u32,
@@ -201,6 +199,61 @@ impl Argon2 {
 
         Ok(hash_buffer)
     }
+
+    /// Encodes the Argon2 configuration into a byte vector using little-endian byte order.
+    pub fn encode(&self) -> Vec<u8> {
+        let mut buf = Vec::with_capacity(28);
+        let version = self.version as u32;
+        buf.extend_from_slice(&self.m_cost.to_le_bytes());
+        buf.extend_from_slice(&self.t_cost.to_le_bytes());
+        buf.extend_from_slice(&self.p_cost.to_le_bytes());
+        buf.extend_from_slice(&self.hash_length.to_le_bytes());
+        buf.extend_from_slice(&(self.algorithm as u32).to_le_bytes());
+        buf.extend_from_slice(&version.to_le_bytes());
+        buf
+    }
+
+    /// Decodes the Argon2 configuration from a byte slice using little-endian byte order.
+    ///
+    /// # Errors
+    ///
+    /// Returns `Error::Argon2(Argon2Error::DecodingFail)` if the data is too short or contains invalid enum values.
+    pub fn decode(data: &[u8]) -> Result<Self, Error> {
+        if data.len() < 28 {
+            return Err(Error::Argon2(Argon2Error::DecodingFail));
+        }
+
+        let m_cost = u32::from_le_bytes([data[0], data[1], data[2], data[3]]);
+        let t_cost = u32::from_le_bytes([data[4], data[5], data[6], data[7]]);
+        let p_cost = u32::from_le_bytes([data[8], data[9], data[10], data[11]]);
+        let hash_length = u64::from_le_bytes([
+            data[12], data[13], data[14], data[15], data[16], data[17], data[18], data[19],
+        ]);
+        let alg_u32 = u32::from_le_bytes([data[20], data[21], data[22], data[23]]);
+        let version_u32 = u32::from_le_bytes([data[24], data[25], data[26], data[27]]);
+
+        let algorithm = match alg_u32 {
+            0 => Algorithm::Argon2d,
+            1 => Algorithm::Argon2i,
+            2 => Algorithm::Argon2id,
+            _ => return Err(Error::Argon2(Argon2Error::DecodingFail)),
+        };
+
+        let version = match version_u32 {
+            0x10 => Version::V0x10,
+            0x13 => Version::V0x13,
+            _ => return Err(Error::Argon2(Argon2Error::DecodingFail)),
+        };
+
+        Ok(Self {
+            m_cost,
+            t_cost,
+            p_cost,
+            hash_length,
+            algorithm,
+            version,
+        })
+    }
 }
 
 // Argon2 Presets
@@ -266,5 +319,14 @@ mod tests {
         let salt = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
         let hash = argon2.hash_password("password", salt).unwrap();
         assert_eq!(hash.len(), 64);
+    }
+
+    #[test]
+    fn test_encode_decode() {
+        let argon2 = Argon2::balanced();
+        let encoded = argon2.encode();
+        assert_eq!(encoded.len(), 28);
+        let decoded = Argon2::decode(&encoded).unwrap();
+        assert_eq!(argon2, decoded);
     }
 }
