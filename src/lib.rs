@@ -164,7 +164,7 @@ impl Argon2 {
     /// ## Returns
     ///
     /// The hash of the password in its raw byte form
-    pub fn hash_password(&self, password: &str, mut salt: Vec<u8>) -> Result<Vec<u8>, Error> {
+    pub fn hash_password(&self, password: &str, mut salt: Vec<u8>) -> Result<Vec<u8>, Argon2Error> {
         let mut hash_buffer = vec![0u8; self.hash_length as usize];
 
         let mut context = argon2_context {
@@ -194,7 +194,7 @@ impl Argon2 {
         salt.zeroize();
 
         if code != 0 {
-            return Err(Error::Argon2(map_argon2_error(code)));
+            return Err(map_argon2_error(code));
         }
 
         Ok(hash_buffer)
@@ -218,9 +218,9 @@ impl Argon2 {
     /// # Errors
     ///
     /// Returns `Error::Argon2(Argon2Error::DecodingFail)` if the data is too short or contains invalid enum values.
-    pub fn decode(data: &[u8]) -> Result<Self, Error> {
+    pub fn decode(data: &[u8]) -> Result<Self, Argon2Error> {
         if data.len() < 28 {
-            return Err(Error::Argon2(Argon2Error::DecodingFail));
+            return Err(Argon2Error::DecodingFail);
         }
 
         let m_cost = u32::from_le_bytes([data[0], data[1], data[2], data[3]]);
@@ -236,13 +236,13 @@ impl Argon2 {
             0 => Algorithm::Argon2d,
             1 => Algorithm::Argon2i,
             2 => Algorithm::Argon2id,
-            _ => return Err(Error::Argon2(Argon2Error::DecodingFail)),
+            _ => return Err(Argon2Error::DecodingFail),
         };
 
         let version = match version_u32 {
             0x10 => Version::V0x10,
             0x13 => Version::V0x13,
-            _ => return Err(Error::Argon2(Argon2Error::DecodingFail)),
+            _ => return Err(Argon2Error::DecodingFail),
         };
 
         Ok(Self {
@@ -314,19 +314,23 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_argon2() {
+    fn test_argon2() -> Result<(), Argon2Error> {
         let argon2 = Argon2::very_fast();
         let salt = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
-        let hash = argon2.hash_password("password", salt).unwrap();
+        let hash = argon2.hash_password("password", salt)?;
         assert_eq!(hash.len(), 64);
+
+        Ok(())
     }
 
     #[test]
-    fn test_encode_decode() {
+    fn test_encode_decode() -> Result<(), Argon2Error> {
         let argon2 = Argon2::balanced();
         let encoded = argon2.encode();
         assert_eq!(encoded.len(), 28);
-        let decoded = Argon2::decode(&encoded).unwrap();
+        let decoded = Argon2::decode(&encoded)?;
         assert_eq!(argon2, decoded);
+
+        Ok(())
     }
 }

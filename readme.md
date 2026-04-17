@@ -24,4 +24,3 @@ assert_eq!(hash.len(), 64);
 ## Features
 
 - `zeroize` - Zeroizes the salt after hashing.
-- `bincode` - Enables the `bincode` crate to encode and decode the Argon2 struct.

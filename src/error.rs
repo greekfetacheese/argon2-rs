@@ -1,84 +1,42 @@
-use thiserror::Error as ThisError;
+use std::fmt::{Debug, Display};
 
-#[derive(ThisError, Debug)]
-pub enum Error {
-    #[error("Argon2 error: {0}")]
-    Argon2(#[from] Argon2Error),
-}
-
-#[derive(ThisError, Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Copy, Clone, Eq, PartialEq)]
 pub enum Argon2Error {
-    #[error("Output pointer is null")]
     OutputPtrNull,
-    #[error("Output is too short")]
     OutputTooShort,
-    #[error("Output is too long")]
     OutputTooLong,
-    #[error("Password is too short")]
     PasswordTooShort,
-    #[error("Password is too long")]
     PasswordTooLong,
-    #[error("Salt is too short")]
     SaltTooShort,
-    #[error("Salt is too long")]
     SaltTooLong,
-    #[error("Associated data is too short")]
     AdTooShort,
-    #[error("Associated data is too long")]
     AdTooLong,
-    #[error("Secret is too short")]
     SecretTooShort,
-    #[error("Secret is too long")]
     SecretTooLong,
-    #[error("Time cost is too small")]
     TimeTooSmall,
-    #[error("Time cost is too large")]
     TimeTooLarge,
-    #[error("Memory cost is too little")]
     MemoryTooLittle,
-    #[error("Memory cost is too much")]
     MemoryTooMuch,
-    #[error("Number of lanes is too few")]
     LanesTooFew,
-    #[error("Number of lanes is too many")]
     LanesTooMany,
-    #[error("Password pointer mismatch")]
     PwdPtrMismatch,
-    #[error("Salt pointer mismatch")]
     SaltPtrMismatch,
-    #[error("Secret pointer mismatch")]
     SecretPtrMismatch,
-    #[error("Associated data pointer mismatch")]
     AdPtrMismatch,
-    #[error("Memory allocation error")]
     MemoryAllocationError,
-    #[error("Free memory callback is null")]
     FreeMemoryCbkNull,
-    #[error("Allocate memory callback is null")]
     AllocateMemoryCbkNull,
-    #[error("Incorrect parameter")]
     IncorrectParameter,
-    #[error("Incorrect Argon2 type")]
     IncorrectType,
-    #[error("Output pointer mismatch")]
     OutPtrMismatch,
-    #[error("Number of threads is too few")]
     ThreadsTooFew,
-    #[error("Number of threads is too many")]
     ThreadsTooMany,
-    #[error("Missing arguments")]
     MissingArgs,
-    #[error("Encoding failed")]
     EncodingFail,
-    #[error("Decoding failed")]
     DecodingFail,
-    #[error("Thread failed")]
     ThreadFail,
-    #[error("Decoding length failed")]
     DecodingLengthFail,
-    #[error("Verification mismatch")]
     VerifyMismatch,
-    #[error("Unknown argon2 error with code: {0}")]
     Unknown(i32),
 }
 
@@ -120,5 +78,56 @@ pub(crate) fn map_argon2_error(code: i32) -> Argon2Error {
         -34 => Argon2Error::DecodingLengthFail,
         -35 => Argon2Error::VerifyMismatch,
         _ => Argon2Error::Unknown(code),
+    }
+}
+
+impl std::error::Error for Argon2Error {}
+
+impl Display for Argon2Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Argon2Error::OutputPtrNull => write!(f, "Output pointer is null"),
+            Argon2Error::OutputTooShort => write!(f, "Output is too short"),
+            Argon2Error::OutputTooLong => write!(f, "Output is too long"),
+            Argon2Error::PasswordTooShort => write!(f, "Password is too short"),
+            Argon2Error::PasswordTooLong => write!(f, "Password is too long"),
+            Argon2Error::SaltTooShort => write!(f, "Salt is too short"),
+            Argon2Error::SaltTooLong => write!(f, "Salt is too long"),
+            Argon2Error::AdTooShort => write!(f, "Associated data is too short"),
+            Argon2Error::AdTooLong => write!(f, "Associated data is too long"),
+            Argon2Error::SecretTooShort => write!(f, "Secret is too short"),
+            Argon2Error::SecretTooLong => write!(f, "Secret is too long"),
+            Argon2Error::TimeTooSmall => write!(f, "Time cost is too small"),
+            Argon2Error::TimeTooLarge => write!(f, "Time cost is too large"),
+            Argon2Error::MemoryTooLittle => write!(f, "Memory cost is too little"),
+            Argon2Error::MemoryTooMuch => write!(f, "Memory cost is too much"),
+            Argon2Error::LanesTooFew => write!(f, "Number of lanes is too few"),
+            Argon2Error::LanesTooMany => write!(f, "Number of lanes is too many"),
+            Argon2Error::PwdPtrMismatch => write!(f, "Password pointer mismatch"),
+            Argon2Error::SaltPtrMismatch => write!(f, "Salt pointer mismatch"),
+            Argon2Error::SecretPtrMismatch => write!(f, "Secret pointer mismatch"),
+            Argon2Error::AdPtrMismatch => write!(f, "Associated data pointer mismatch"),
+            Argon2Error::MemoryAllocationError => write!(f, "Memory allocation error"),
+            Argon2Error::FreeMemoryCbkNull => write!(f, "Free memory callback is null"),
+            Argon2Error::AllocateMemoryCbkNull => write!(f, "Allocate memory callback is null"),
+            Argon2Error::IncorrectParameter => write!(f, "Incorrect parameter"),
+            Argon2Error::IncorrectType => write!(f, "Incorrect Argon2 type"),
+            Argon2Error::OutPtrMismatch => write!(f, "Output pointer mismatch"),
+            Argon2Error::ThreadsTooFew => write!(f, "Number of threads is too few"),
+            Argon2Error::ThreadsTooMany => write!(f, "Number of threads is too many"),
+            Argon2Error::MissingArgs => write!(f, "Missing arguments"),
+            Argon2Error::EncodingFail => write!(f, "Encoding failed"),
+            Argon2Error::DecodingFail => write!(f, "Decoding failed"),
+            Argon2Error::ThreadFail => write!(f, "Thread failed"),
+            Argon2Error::DecodingLengthFail => write!(f, "Decoding length failed"),
+            Argon2Error::VerifyMismatch => write!(f, "Verification mismatch"),
+            Argon2Error::Unknown(code) => write!(f, "Unknown argon2 error with code: {code}"),
+        }
+    }
+}
+
+impl Debug for Argon2Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self)
     }
 }
