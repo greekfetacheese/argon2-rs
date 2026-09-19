@@ -24,3 +24,7 @@ assert_eq!(hash.len(), 64);
 ## Features
 
 - `zeroize` - Zeroizes the salt after hashing.
+
+## Credits
+- [zeroize](https://github.com/RustCrypto/utils/tree/master/zeroize)
+- [argon2-sys](https://github.com/philipahlberg/argon2-sys)
