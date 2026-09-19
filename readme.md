@@ -9,7 +9,7 @@ This crate is using the original [C implementation](https://github.com/P-H-C/phc
 ```rust
 use argon2_rs::Argon2;
 
-let m_cost = 512_000; // 512Mb of memory
+let m_cost = 512_000; // 512 MB of memory (the cost is in KiB)
 let t_cost = 8; // 8 iterations
 let p_cost = 1; // 1 parallelization
 
